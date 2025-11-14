@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import { db } from './database/db'; // db.ts ahora puede acceder a process.env
 import authRouter from './routes/auth'; // FIX: Importa authRouter desde auth.ts
 import { authenticateToken } from './middleware/authMiddleware';
-// Eliminamos la importación de AuthenticatedRequest para evitar TS2769
+import { AuthenticatedRequest } from './types/express';
 
 // --- Configuration ---
 const PORT = process.env.PORT || 3001;
@@ -29,11 +29,11 @@ app.use('/api/auth', authRouter); // FIX: Usa authRouter
 
 /**
  * Ruta de Perfil Protegida
- * Usamos Request estándar y aserción de no-nulo (!) ya que authenticateToken garantiza req.user.
+ * Usamos AuthenticatedRequest para garantizar que req.user está presente.
  */
-app.get('/api/profile', authenticateToken, (req: Request, res: Response) => {
-  // Usamos la aserción de no-nulo (!) para garantizar que 'user' existe después del middleware.
-  const user = req.user!; 
+app.get('/api/profile', authenticateToken, (req: AuthenticatedRequest, res: Response) => {
+  // Ahora 'req' es de tipo AuthenticatedRequest, por lo que 'user' está garantizado.
+  const user = req.user; 
   res.json({ 
     message: `Bienvenido, ${user.email}!`,
     user_id: user.id,
